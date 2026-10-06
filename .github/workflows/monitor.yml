@@ -1,0 +1,61 @@
+name: 8591 星塔旅人进度号监测
+
+on:
+  schedule:
+    - cron: '7,17,27,37,47,57 * * * *'
+  workflow_dispatch:
+    inputs:
+      preview:
+        description: '只测试 8591 读取（不发通知或更新记录）'
+        type: boolean
+        default: false
+      test_discord:
+        description: '发送 Discord 连接测试（不扫描商品）'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: 8591-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 检查商品或测试 Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TEST_DISCORD: ${{ inputs.test_discord }}
+          PREVIEW: ${{ inputs.preview }}
+        run: |
+          if [ "$PREVIEW" = "true" ]; then
+            python monitor.py --preview
+          elif [ "$TEST_DISCORD" = "true" ]; then
+            python monitor.py --test-discord
+          else
+            python monitor.py
+          fi
+      - name: 保存商品记录（发送部分失败时也保存）
+        if: always()
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ ! -f .monitor/state.json ]; then exit 0; fi
+          git config user.name '8591 Monitor'
+          git config user.email '8591-monitor@users.noreply.github.com'
+          git add -- .monitor/state.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Update 8591 listing notification state'
+          git pull --rebase origin "$DEFAULT_BRANCH"
+          git push origin "HEAD:$DEFAULT_BRANCH"

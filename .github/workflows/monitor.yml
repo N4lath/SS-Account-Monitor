@@ -1,4 +1,4 @@
-name: 8591 星塔旅人进度号监测
+name: 8591 星塔旅人進度號監測
 
 on:
   schedule:
@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       preview:
-        description: '只测试 8591 读取（不发通知或更新记录）'
+        description: '只測試 8591 讀取（不發通知或更新記錄）'
         type: boolean
         default: false
       test_discord:
-        description: '发送 Discord 连接测试（不扫描商品）'
+        description: '發送 Discord 連接測試（不掃描商品）'
         type: boolean
         default: false
 
@@ -33,9 +33,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: 检查商品或测试 Discord
+      - name: 檢查商品或測試 Discord
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_USER_ID: ${{ secrets.DISCORD_USER_ID }}
           TEST_DISCORD: ${{ inputs.test_discord }}
           PREVIEW: ${{ inputs.preview }}
         run: |
@@ -46,7 +47,7 @@ jobs:
           else
             python monitor.py
           fi
-      - name: 保存商品记录（发送部分失败时也保存）
+      - name: 保存商品記錄（部分發送失敗時也保存）
         if: always()
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}

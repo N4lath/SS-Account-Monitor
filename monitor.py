@@ -122,7 +122,20 @@ def message(item):
                         "timestamp": dt.datetime.now(dt.timezone.utc).isoformat()}]}
 
 
+def with_user_mention(payload, user_id):
+    user_id = user_id.strip()
+    if not user_id:
+        return payload
+    if not re.fullmatch(r"[0-9]{1,20}", user_id) or int(user_id) == 0:
+        raise MonitorError("DISCORD_USER_ID 必須是複製的 Discord 使用者 ID 數字。")
+    result = dict(payload)
+    result["content"] = f"<@{user_id}> {payload.get('content', '')}".strip()
+    result["allowed_mentions"] = {"parse": [], "users": [user_id]}
+    return result
+
+
 def send(url, payload):
+    payload = with_user_mention(payload, os.environ.get("DISCORD_USER_ID", ""))
     response = request_json(url, payload)
     if not isinstance(response, dict) or not response.get("id"):
         raise MonitorError("Discord 未确认发送成功；下次检查会重试。")

@@ -114,11 +114,11 @@ def webhook_url(value):
 def message(item):
     return {"username": "星塔旅人上架通知", "allowed_mentions": {"parse": []},
             "embeds": [{"title": item["title"][:256], "url": item["url"],
-                        "color": 0x6C60FF, "description": "发现新的进度号商品",
-                        "fields": [{"name": "价格", "value": f"NT$ {item['price']}"[:1024], "inline": True},
-                                   {"name": "服务器", "value": item["server"][:1024], "inline": True},
-                                   {"name": "商品编号", "value": item["id"], "inline": True}],
-                        "footer": {"text": "8591 · 星塔旅人 · 帐号 · 进度号 · 所有服务器"},
+                        "color": 0x6C60FF, "description": "發現新的進度號商品",
+                        "fields": [{"name": "價格", "value": f"NT$ {item['price']}"[:1024], "inline": True},
+                                   {"name": "伺服器", "value": item["server"][:1024], "inline": True},
+                                   {"name": "商品編號", "value": item["id"], "inline": True}],
+                        "footer": {"text": "8591 · 星塔旅人 · 帳號 · 進度號 · 所有伺服器"},
                         "timestamp": dt.datetime.now(dt.timezone.utc).isoformat()}]}
 
 
@@ -197,7 +197,7 @@ def main():
         url = webhook_url(os.environ.get("DISCORD_WEBHOOK_URL", ""))
         if args.test_discord:
             send(url, {"username": "星塔旅人上架通知", "allowed_mentions": {"parse": []},
-                       "content": "✅ 通知连接测试成功。监测范围：8591 星塔旅人／帐号／进度号／所有服务器。"})
+                       "content": "✅ 通知連接測試成功。監測範圍：8591 星塔旅人／帳號／進度號／所有伺服器。"})
             print("Discord 测试消息已发送。")
             return 0
         process(fetch_items(), args.state, lambda payload: send(url, payload))
